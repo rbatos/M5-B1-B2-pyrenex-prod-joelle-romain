@@ -24,39 +24,39 @@ jobs:
   #   needs: test ; lance `python scripts/evaluate_model.py --release-tag <ref>`
   #   qui DOIT bloquer (exit≠0) si une métrique passe sous les seuils.
   #   Uploadez mlruns/ en artefact.
-  # evaluate-model:
-  #   needs: test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: "3.11"
-  #     - name: Install eval deps
-  #       run: pip install -r services/model/requirements.txt mlflow pandas scikit-learn
-  #     - name: Évaluer le modèle vs seuils (golden run)
-  #       run: python scripts/evaluate_model.py --release-tag ${{ github.ref }}
-  #     - name: Upload mlruns (artefact de traçabilité)
-  #       if: always()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: mlruns-${{ github.run_id }}
-  #         path: mlruns/
+  evaluate-model:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install eval deps
+        run: pip install -r services/model/requirements.txt mlflow pandas scikit-learn
+      - name: Évaluer le modèle vs seuils (golden run)
+        run: python scripts/evaluate_model.py --release-tag ${{ github.ref }}
+      - name: Upload mlruns (artefact de traçabilité)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlruns-${{ github.run_id }}
+          path: mlruns/
 
-  # build:
-  #   needs: evaluate-model
-  #   if: github.event_name == 'push'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: "3.11"
-  #     - name: Build the model
-  #       run: python scripts/evaluate_model.py --release-tag ${{ github.ref }}
+  build:
+    needs: [test, evaluate-model]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build the model
+        run: python scripts/evaluate_model.py --release-tag ${{ github.ref }}
 
   build-and-push:
-    needs: test
+    needs: [test, evaluate-model]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

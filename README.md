@@ -70,24 +70,24 @@ Vous repartez **chacun·e** du repo binôme, dans une branche perso
 
 **M5-B1 — avant mercredi 12h30**
 
-- [ ] `docker compose up --build` démarre les **3 services** de façon **reproductible**, healthchecks verts
-- [ ] `/metrics` exposé côté `model` **et** `backend`
-- [ ] Dashboard Grafana provisionné **automatiquement** (3 panels : vie / vitesse / comportement)
+- [x] `docker compose up --build` démarre les **3 services** de façon **reproductible**, healthchecks verts
+- [x] `/metrics` exposé côté `model` **et** `backend`
+- [x] Dashboard Grafana provisionné **automatiquement** (3 panels : vie / vitesse / comportement)
 - [ ] Workflow CI **vert**, image poussée sur GHCR, tag `v1.0.0-prod`
 - [ ] Le **contract test** du modèle bloque la release s'il est rouge
       *(il vérifie le **contrat technique** de l'API — pas la performance du
       modèle : ça, c'est l'évaluation continue de B2)*
-- [ ] `runbook.md` — 4 procédures (Service KO / Latence / Métrique modèle / Rollback)
-- [ ] `README.md` — schéma Mermaid de l'archi + démarrage en 3 commandes
-- [ ] Commits binôme : `Co-authored-by:` ou auteurs nominatifs
+- [x] `runbook.md` — 4 procédures (Service KO / Latence / Métrique modèle / Rollback)
+- [x] `README.md` — schéma Mermaid de l'archi + démarrage en 3 commandes
+- [x] Commits binôme : `Co-authored-by:` ou auteurs nominatifs
 
 **M5-B2 — avant vendredi 17h**
 
-- [ ] `data/reference_set.csv` (~500 lignes) **construit par vous** depuis le holdout M1, figé, versionné
-- [ ] `data/reference_baseline.json` — le golden run, gelé sur **ce** jeu
-- [ ] `scripts/evaluate_model.py` — 4 métriques, ≥ 2 runs MLflow comparables
-- [ ] `evaluation_thresholds.md` — 4 métriques × golden run / plancher absolu / baisse max / **justification**, tolérance relative ≥ 2 σ (bootstrap)
-- [ ] Étape `evaluate-model` dans la CI : `--degrade` fait **échouer** la release
+- [x] `data/reference_set.csv` (~500 lignes) **construit par vous** depuis le holdout M1, figé, versionné
+- [x] `data/reference_baseline.json` — le golden run, gelé sur **ce** jeu
+- [x] `scripts/evaluate_model.py` — 4 métriques, ≥ 2 runs MLflow comparables
+- [x] `evaluation_thresholds.md` — 4 métriques × golden run / plancher absolu / baisse max / **justification**, tolérance relative ≥ 2 σ (bootstrap)
+- [x] Étape `evaluate-model` dans la CI : `--degrade` fait **échouer** la release
       *(`mlruns/` est gitignoré : la preuve passe par l'**artefact CI**, pas par un commit)*
 
 ---

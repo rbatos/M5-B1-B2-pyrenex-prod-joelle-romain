@@ -8,26 +8,22 @@
 
 ## 1. Service KO (un conteneur down)
 
-**Déclenchement** : _à compléter (signal Grafana / `docker ps`)_
-docker compose ps` montre un service en `exited` ou `unhealthy` pendant plus de 2 minutes, ou le panel « Vie » affiche RPS ≈ 0 pendant > 2 min.
+**Déclenchement** : `docker compose ps` montre un service en `exited` ou `unhealthy` pendant plus de 2 minutes, ou le panel « Vie » affiche RPS ≈ 0 pendant > 2 min.
 
 **Actions** :
 1. `docker compose logs --tail=100 model` puis `docker compose logs --tail=100 backend` pour lire l’erreur la plus récente.
 2. Identifier l'erreur
 3. Relance docker compose restart <service> et checker `docker compose ps`
 
-**Qui appeler** :
-Responsable backend ou infrastructure si le problème est au niveau du docker/compose
+**Qui appeler** : Responsable backend ou infrastructure si le problème est au niveau du docker/compose
 
-**On NE fait PAS** : 
-`docker compose down -v` (détruit les volumes), ni `docker system prune` sans validation. On n’efface pas les données ni les volumes en prod
+**On NE fait PAS** : `docker compose down -v` (détruit les volumes), ni `docker system prune` sans validation. On n’efface pas les données ni les volumes en prod
 
 ---
 
 ## 2. Latence p95 dégradée
 
-**Déclenchement** : _seuil chiffré à définir (cf. panel « Vitesse »)_
-le panel « Vitesse » dépasse le seuil de base : p95 de `/predict` > 300 ms sur 5 minutes
+**Déclenchement** : le panel « Vitesse » dépasse le seuil de base : p95 de `/predict` > 300 ms sur 5 minutes
 
 **Actions** :
 1. Vérifier le panel Grafana « Vitesse — p50/p95/p99 »
@@ -35,11 +31,9 @@ le panel « Vitesse » dépasse le seuil de base : p95 de `/predict` > 300 ms su
 3. Vérifier si un déploiement récent ou un changement de config a eu lieu dans les dernières heures.
 4. Si le pic est clair et durable, redémarrer le service concerné puis re-checker la latence 2-3 minutes plus tard.
 
-**Qui appeler** : 
-responsable modèle si la latence vient du calcul lui-même
+**Qui appeler** : responsable modèle si la latence vient du calcul lui-même
 
-**On NE fait PAS** :
-ne pas redéployer une version non validée, ni modifier le code en prod sans test
+**On NE fait PAS** : ne pas redéployer une version non validée, ni modifier le code en prod sans test
 
 ---
 
@@ -53,11 +47,9 @@ ne pas redéployer une version non validée, ni modifier le code en prod sans te
 3. Vérifier si un changement de jeu de données, de version de modèle ou de config a été déployé.
 4. Si l’écart est confirmé, arrêter la diffusion de cette version et revenir à la dernière version stable.
 
-**Qui appeler** :
-responsable modèle
+**Qui appeler** : responsable modèle
 
-**On NE fait PAS** : 
-ne pas “ajuster” les seuils pour faire passer le dashboard, ni contourné le signal par un hotfix sans validation. On ne déploie pas un modèle qui n’a pas été évalué contre le golden run.
+**On NE fait PAS** : ne pas “ajuster” les seuils pour faire passer le dashboard, ni contourné le signal par un hotfix sans validation. On ne déploie pas un modèle qui n’a pas été évalué contre le golden run.
 
 ---
 

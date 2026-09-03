@@ -1,0 +1,13 @@
+{
+  "f1_macro": 0.6579,
+  "f1_default": 0.6627,
+  "roc_auc": 0.7014,
+  "recall_default": 0.672,
+  "f1_macro_sigma": 0.021501,
+  "f1_default_sigma": 0.024574,
+  "roc_auc_sigma": 0.023174,
+  "recall_default_sigma": 0.02882,
+  "model_version": "v2.0.0",
+  "reference_set": "data\\reference_set.csv",
+  "n_reference": 500
+}
