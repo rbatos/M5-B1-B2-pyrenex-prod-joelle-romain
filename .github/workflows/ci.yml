@@ -22,8 +22,10 @@ jobs:
       - name: Install backend deps
         run: pip install -r services/backend/requirements.txt
       - name: Tests unitaires backend
-        run: pytest -v tests
+        run: python -m pytest -v tests
         working-directory: services/backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/services/backend
 
   # TODO 1 (M5-B2) — job `evaluate-model` :
   #   needs: test ; lance `python scripts/evaluate_model.py --release-tag <ref>`
