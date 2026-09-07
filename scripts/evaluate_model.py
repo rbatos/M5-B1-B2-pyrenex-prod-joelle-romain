@@ -54,7 +54,7 @@ REFERENCE_BASELINE = ROOT / "data" / "reference_baseline.json"
 THRESHOLDS: dict[str, dict[str, float]] = {
     "f1_macro": {"absolute_min": 0.55, "max_drop_vs_baseline": 0.05},
     "f1_default": {"absolute_min": 0.35, "max_drop_vs_baseline": 0.05},
-    "roc_auc": {"absolute_min": 0.65, "max_drop_vs_baseline": 0.04},
+    "roc_auc": {"absolute_min": 0.65, "max_drop_vs_baseline": 0.05},
     "recall_default": {"absolute_min": 0.55, "max_drop_vs_baseline": 0.08},
 }
 

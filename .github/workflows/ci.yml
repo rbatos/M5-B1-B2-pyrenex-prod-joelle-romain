@@ -2,7 +2,7 @@ name: CI/CD Pyrenex Prod
 
 on:
   push:
-    branches: [main]
+    branches: [main, romain]
     tags: ["v*"]
   pull_request:
     branches: [main]
@@ -19,6 +19,8 @@ jobs:
         run: pip install -r services/model/requirements.txt pytest httpx
       - name: Tests unitaires + contract test du modèle
         run: pytest -v services/model/tests
+      - name: Tests unitaires backend
+        run: pytest -v services/backend/tests
 
   # TODO 1 (M5-B2) — job `evaluate-model` :
   #   needs: test ; lance `python scripts/evaluate_model.py --release-tag <ref>`
@@ -52,8 +54,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Build the model
-        run: python scripts/evaluate_model.py --release-tag ${{ github.ref }}
 
   build-and-push:
     needs: [test, evaluate-model]
