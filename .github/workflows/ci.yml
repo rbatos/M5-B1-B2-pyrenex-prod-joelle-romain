@@ -19,8 +19,11 @@ jobs:
         run: pip install -r services/model/requirements.txt pytest httpx
       - name: Tests unitaires + contract test du modèle
         run: pytest -v services/model/tests
+      - name: Install backend deps
+        run: pip install -r services/backend/requirements.txt
       - name: Tests unitaires backend
         run: pytest -v services/backend/tests
+        working-directory: services/backend
 
   # TODO 1 (M5-B2) — job `evaluate-model` :
   #   needs: test ; lance `python scripts/evaluate_model.py --release-tag <ref>`
