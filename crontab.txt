@@ -1,0 +1,2 @@
+# Trigger réentraînement (à adapter). Vérifie le seuil toutes les 6h.
+# 0 */6 * * * cd /opt/pyrenex && .venv/bin/python scripts/retrain.py --min-feedback 200 >> logs/retrain.log 2>&1
