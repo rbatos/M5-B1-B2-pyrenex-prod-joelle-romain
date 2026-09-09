@@ -22,6 +22,9 @@ from app.schemas import HealthResponse, LoanApplication, Prediction
 from prometheus_client import Counter, Histogram
 from prometheus_fastapi_instrumentator import Instrumentator
 
+from pathlib import Path
+from datetime import datetime, timezone
+import csv
 
 # URL du service model — configurable par variable d'env (dev/staging/prod)
 MODEL_URL = os.environ.get("MODEL_URL", "http://model:8000")
@@ -70,6 +73,33 @@ Instrumentator(should_group_status_codes=False).instrument(app).expose(
     app, endpoint="/metrics", include_in_schema=False
 )
 
+
+# Stockage des appels pour recherche lors de feedbacks
+DATA = Path(__file__).resolve().parents[3] / "data"
+SCORED_PATH = DATA / "prod_scored.csv"
+
+def persist_scored_application(
+    request_id: str,
+    application: LoanApplication,
+    prediction: Prediction,
+) -> None:
+    DATA.mkdir(exist_ok=True)
+
+    row = {
+        "request_id": request_id,
+        **application.model_dump(),
+        "prediction": prediction.prediction,
+        "probability": prediction.probability,
+        "model_version": prediction.model_version,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    file_exists = SCORED_PATH.exists()
+    with SCORED_PATH.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=row.keys())
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
 
 @app.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
@@ -140,4 +170,9 @@ async def score(application: LoanApplication, request: Request) -> Prediction:
         model_version=prediction.model_version,
     ).inc()
     BACKEND_PREDICTION_PROBA.observe(prediction.probability)
+
+    persist_scored_application(request_id=request_id,
+                               application=application,
+                               prediction=prediction)
+
     return prediction
