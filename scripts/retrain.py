@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -118,9 +119,11 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--min-feedback", type=int, default=200)
     args = p.parse_args()
-    feedbacks = pd.read_csv(DATA / "feedbacks_simules.csv")
-    if "used_for_training" not in feedbacks.columns:
-        feedbacks["used_for_training"] = 0
+    with sqlite3.connect(DATA / "feedbacks.db") as connection:
+        feedbacks = pd.read_sql_query(
+            "SELECT request_id, true_label, used_for_training FROM feedbacks",
+            connection,
+        )
 
     # GARDE-SEUIL : comptez les feedbacks NON CONSOMMÉS
     #          (used_for_training == 0), PAS le total. Si < seuil → return 0
@@ -215,8 +218,11 @@ def main() -> int:
             json.dumps(promoted_metadata, indent=2), encoding="utf-8"
         )
 
-    feedbacks.loc[new_feedbacks.index, "used_for_training"] = 1
-    feedbacks.to_csv(DATA / "feedbacks_simules.csv", index=False)
+    with sqlite3.connect(DATA / "feedbacks.db") as connection:
+        connection.executemany(
+            "UPDATE feedbacks SET used_for_training = 1 WHERE request_id = ?",
+            [(request_id,) for request_id in new_feedbacks["request_id"]],
+        )
     print(json.dumps(decision_record, indent=2))
     return 0
 

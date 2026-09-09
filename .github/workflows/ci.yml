@@ -6,6 +6,7 @@ on:
     tags: ["v*"]
   pull_request:
     branches: [main]
+  workflow_dispatch:        # déclenchement manuel du réentraînement
 
 jobs:
   test:
@@ -27,7 +28,27 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/services/backend
 
-  # TODO 1 (M5-B2) — job `evaluate-model` :
+  # Job `auto-retrain-trigger` (needs: <job de tests>, if: workflow_dispatch) :
+  #   pip install -r requirements.txt ; python scripts/retrain.py --min-feedback 200
+  #   (bloque si contract test / éval KO ; en succès : tag v2.1.0 → CI/CD M5)
+  #
+  #   Ce bloc vient du workflow M6-B2. Adaptez `needs:` au nom réel du job de
+  #   tests si celui-ci change ; ici le job s'appelle bien `test`.
+  auto-retrain-trigger:
+    needs: test
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install retraining dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Run retraining pipeline
+        run: python scripts/retrain.py --min-feedback 200
+
+  # job `evaluate-model` :
   #   needs: test ; lance `python scripts/evaluate_model.py --release-tag <ref>`
   #   qui DOIT bloquer (exit≠0) si une métrique passe sous les seuils.
   #   Uploadez mlruns/ en artefact.

@@ -50,7 +50,8 @@ def _init_db() -> None:
                 request_id TEXT PRIMARY KEY,
                 true_label INTEGER NOT NULL,
                 comments   TEXT,
-                created_at TEXT NOT NULL
+                created_at TEXT NOT NULL,
+                used_for_training INTEGER NOT NULL DEFAULT 0
                 -- TODO 1 (brique B) — ajoutez `used_for_training`
                 -- (INTEGER NOT NULL DEFAULT 0).
                 -- Sans cette colonne, le trigger ne peut compter que le TOTAL,
@@ -58,6 +59,12 @@ def _init_db() -> None:
                 -- les mêmes données une fois le seuil franchi.
             )"""
         )
+        columns = {row[1] for row in con.execute("PRAGMA table_info(feedbacks)")}
+        if "used_for_training" not in columns:
+            con.execute(
+                "ALTER TABLE feedbacks ADD COLUMN used_for_training "
+                "INTEGER NOT NULL DEFAULT 0"
+            )
 
 
 @asynccontextmanager

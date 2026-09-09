@@ -14,6 +14,18 @@ services:
       start_period: 20s
       retries: 3
 
+  feedback:
+    build: ./services/feedback
+    ports:
+      - "8002:8002"
+    environment:
+      FEEDBACK_DB: /data/feedbacks.db
+    volumes:
+      - ./data:/data
+    depends_on:
+      model:
+        condition: service_healthy
+
   # TODO 1 — service `backend` :
   #   build ./services/backend, port 8001, env MODEL_URL=http://model:8000
   #   + ALLOWED_ORIGINS, depends_on model (condition service_healthy),
