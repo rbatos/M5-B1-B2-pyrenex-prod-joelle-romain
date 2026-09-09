@@ -129,5 +129,81 @@
       "expr": "histogram_quantile(0.90, sum(rate(pyrenex_prediction_proba_bucket{job=\"model\"}[5m])) by (le))",
       "legendFormat": "p90"
     }]
+  },
+  {
+    "type": "timeseries", "title": "Comportement — probabilites predites (mediane / p90)",
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 48},
+    "description": "Le modele hesite-t-il plus qu'avant ? Histogramme expose par le service model.",
+    "datasource": {"type": "prometheus", "uid": "prometheus"},
+    "fieldConfig": {
+      "defaults": {"unit": "short", "min": 0, "max": 1},
+      "overrides": []
+    },
+    "targets": [{
+      "refId": "A",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "expr": "histogram_quantile(0.5, sum(rate(pyrenex_prediction_proba_bucket{job=\"model\"}[1h])) by (le))",
+      "legendFormat": "mediane"
+    },
+    {
+      "refId": "B",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "expr": "histogram_quantile(0.9, sum(rate(pyrenex_prediction_proba_bucket{job=\"model\"}[1h])) by (le))",
+      "legendFormat": "p90"
+    }]
+  },
+  {
+    "type": "timeseries", "title": "Comportement — repartition des classes predites",
+    "gridPos": {"h": 8, "w": 12, "x": 12, "y": 48},
+    "description": "La proportion de defauts annonces a-t-elle bouge ?",
+    "datasource": {"type": "prometheus", "uid": "prometheus"},
+    "fieldConfig": {
+      "defaults": {"unit": "short"},
+      "overrides": []
+    },
+    "targets": [{
+      "refId": "A",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "expr": "sum(rate(pyrenex_predictions_total{job=\"model\"}[5m])) by (predicted_class)",
+      "legendFormat": "classe {{predicted_class}}"
+    }]
+  },
+  {
+    "type": "timeseries", "title": "Contexte — volume et taux d'erreur",
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 56},
+    "description": "Y a-t-il assez de trafic pour conclure ?",
+    "datasource": {"type": "prometheus", "uid": "prometheus"},
+    "fieldConfig": {
+      "defaults": {"unit": "short"},
+      "overrides": []
+    },
+    "targets": [{
+      "refId": "A",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "expr": "sum(rate(http_requests_total{job=~\"model|backend\"}[5m]))",
+      "legendFormat": "RPS total"
+    },
+    {
+      "refId": "B",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "expr": "sum(rate(http_requests_total{job=~\"model|backend\",status=~\"4..|5..\"}[5m])) or vector(0)",
+      "legendFormat": "erreurs 4xx/5xx"
+    }]
+  },
+  {
+    "type": "timeseries", "title": "Contexte — taux de refus (pas 10s)",
+    "gridPos": {"h": 8, "w": 12, "x": 12, "y": 56},
+    "description": "Part des demandes classees en defaut (classe 1). Scrape toutes les 1s, fenetre 5s (minimum pour que rate() ait au moins 2 points).",
+    "datasource": {"type": "prometheus", "uid": "prometheus"},
+    "fieldConfig": {
+      "defaults": {"unit": "percent", "min": 0, "max": 100},
+      "overrides": []
+    },
+    "targets": [{
+      "refId": "A",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "expr": "100 * sum(rate(pyrenex_predictions_total{job=\"model\",predicted_class=\"1\"}[10s])) / sum(rate(pyrenex_predictions_total{job=\"model\"}[10s]))",
+      "legendFormat": "taux de refus"
+    }]
   }]
 }
