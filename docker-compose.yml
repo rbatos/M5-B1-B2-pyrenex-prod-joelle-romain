@@ -37,6 +37,9 @@ services:
     environment:
       MODEL_URL: "http://model:8000"
       ALLOWED_ORIGINS: "http://frontend,http://127.0.0.1:8088"
+      DATA_DIR: "/data"
+    volumes:
+      - ./data:/data
     depends_on:
       model:
         condition: service_healthy
