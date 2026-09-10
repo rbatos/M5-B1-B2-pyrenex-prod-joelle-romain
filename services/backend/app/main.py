@@ -74,8 +74,13 @@ Instrumentator(should_group_status_codes=False).instrument(app).expose(
 )
 
 
-# Stockage des appels pour recherche lors de feedbacks
-DATA = Path(__file__).resolve().parents[3] / "data"
+# Stockage des appels pour recherche lors de feedbacks. En conteneur, le dossier
+# est fourni par le volume Docker ; hors conteneur, on conserve le chemin du dépôt.
+DATA = Path(
+    os.environ["DATA_DIR"]
+    if os.environ.get("DATA_DIR")
+    else Path(__file__).resolve().parents[3] / "data"
+)
 SCORED_PATH = DATA / "prod_scored.csv"
 
 def persist_scored_application(
@@ -85,18 +90,49 @@ def persist_scored_application(
 ) -> None:
     DATA.mkdir(exist_ok=True)
 
+    fieldnames = [
+        "request_id",
+        "loan_amnt",
+        "term",
+        "int_rate",
+        "installment",
+        "grade",
+        "emp_length",
+        "home_ownership",
+        "annual_inc",
+        "verification_status",
+        "purpose",
+        "dti",
+        "delinq_2yrs",
+        "fico_range_low",
+        "revol_util",
+        "loan_status",
+        "timestamp",
+    ]
+
     row = {
         "request_id": request_id,
-        **application.model_dump(),
-        "prediction": prediction.prediction,
-        "probability": prediction.probability,
-        "model_version": prediction.model_version,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "loan_amnt": int(application.loan_amnt),
+        "term": application.term,
+        "int_rate": application.int_rate,
+        "installment": application.installment,
+        "grade": application.grade,
+        "emp_length": application.emp_length,
+        "home_ownership": application.home_ownership,
+        "annual_inc": application.annual_inc,
+        "verification_status": application.verification_status,
+        "purpose": application.purpose,
+        "dti": application.dti,
+        "delinq_2yrs": application.delinq_2yrs,
+        "fico_range_low": application.fico_range_low,
+        "revol_util": application.revol_util,
+        "loan_status": "Charged Off" if prediction.prediction == 1 else "Fully Paid",
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
     }
 
     file_exists = SCORED_PATH.exists()
     with SCORED_PATH.open("a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=row.keys())
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         if not file_exists:
             writer.writeheader()
         writer.writerow(row)
@@ -107,8 +143,7 @@ async def health() -> HealthResponse:
     return HealthResponse(status="ok")
 
 
-
-# TODO 2 — route POST /score :
+# route POST /score :
 #   - reçoit une LoanApplication (validée par Pydantic),
 #   - appelle MODEL_URL/predict en interne (httpx async),
 #   - propage le header X-Request-ID,
